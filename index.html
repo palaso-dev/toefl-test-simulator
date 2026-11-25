@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOEFL 2026 Reading Practice Simulator</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --ink: #18202c;
+      --muted: #5a6678;
+      --border: #d8e0ea;
+      --primary: #0b5cab;
+      --primary-hover: #084888;
+      --primary-soft: #eaf3fc;
+      --accent: #0f766e;
+      --hard: #9f1239;
+      --hard-bg: #ffe4e6;
+      --ok: #15803d;
+      --ok-bg: #dcfce7;
+      --bad: #b91c1c;
+      --bad-bg: #fee2e2;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .topbar {
+      background: #0f2942;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.2px;
+    }
+    .pill {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+    }
+    .pill.hard {
+      background: var(--hard-bg);
+      color: var(--hard);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .timer {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      background: rgba(255,255,255,0.14);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    .timer.low { background: #b91c1c; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-weight: 600;
+      transition: background 0.15s, border-color 0.15s, transform 0.05s;
+    }
+    button:active { transform: translateY(1px); }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--ink);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: #eef2f7; }
+    .btn-ghost {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.24); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-shell {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .test-shell .topbar {
+      padding: 8px 20px;
+      flex-shrink: 0;
+    }
+    .test-main {
+      flex: 1;
+      min-height: 0;
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .test-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 22px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.55rem;
+    }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 1.02rem;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .score-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .instructions-box {
+      max-width: 780px;
+      margin: 28px auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      text-align: center;
+    }
+    .instructions-box h2 {
+      margin-top: 0;
+      font-size: 1.7rem;
+    }
+    .instructions-box p {
+      color: var(--ink);
+      font-size: 1.03rem;
+      margin: 14px 0;
+    }
+    .mode-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+    .mode-opt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+      height: 100%;
+    }
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; }
+    }
+    .pane {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      height: 100%;
+      overflow-y: auto;
+      min-height: 0;
+    }
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pane-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .passage p {
+      margin: 0 0 11px;
+      font-size: 0.98rem;
+    }
+    .marker {
+      display: inline-block;
+      font-weight: 700;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 0 5px;
+      border-radius: 4px;
+      margin: 0 2px;
+    }
+    .q-prompt {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin: 0 0 18px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .opt-btn {
+      text-align: left;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      padding: 13px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .opt-btn:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
+    }
+    .opt-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      font-weight: 600;
+    }
+    .opt-btn.correct {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+      font-weight: 600;
+    }
+    .opt-btn.wrong {
+      border-color: var(--bad);
+      background: var(--bad-bg);
+    }
+    .cloze-char.correct {
+      border-color: var(--ok);
+      border-bottom-color: var(--ok);
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+    .cloze-char.wrong {
+      border-color: var(--bad);
+      border-bottom-color: var(--bad);
+      background: var(--bad-bg);
+      color: var(--bad);
+    }
+    .cloze-feedback {
+      max-width: 960px;
+      margin: 10px auto 0;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .opt-letter {
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 24px;
+    }
+    .cloze-paragraph {
+      font-size: 1.08rem;
+      line-height: 2.15;
+      color: var(--ink);
+      background: #fff;
+      padding: 20px 26px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      overflow-y: auto;
+    }
+    .cloze-word {
+      display: inline-flex;
+      align-items: baseline;
+      white-space: nowrap;
+      gap: 2px;
+    }
+    .cloze-boxes {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: 1px;
+    }
+    .cloze-char {
+      width: 22px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid #cbd5e1;
+      border-bottom: 2px solid #334155;
+      border-radius: 4px;
+      background: #f8fafc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+      text-transform: lowercase;
+    }
+    .cloze-char:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+    .cloze-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto 10px;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .nav-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .dots {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .dot {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .dot.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+    .dot.answered {
+      background: var(--primary-soft);
+      border-color: #93c5fd;
+    }
+    .results-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .big-score {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .review-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 860px) {
+      .review-grid { grid-template-columns: 1fr; }
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.93rem;
+      gap: 10px;
+    }
+    .review-row:last-child { border-bottom: none; }
+    .badge-ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .badge-bad {
+      background: var(--bad-bg);
+      color: var(--bad);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="exams_data.js"></script>
+  <script>
+    const EXAMS = window.TOEFL_EXAMS || [];
+    const STORAGE_KEY = "toefl_2026_scores_v1";
+
+    let state = {
+      view: "home",
+      examIdx: 0,
+      moduleIdx: 0,
+      stepIdx: 0,
+      timed: true,
+      showM1Review: false,
+      canResume: false,
+      secondsLeft: 18 * 60,
+      timerId: null,
+      checked: {
+        1: {},
+        2: {}
+      },
+      responses: {
+        1: { cloze: {}, mc: {} },
+        2: { cloze: {}, mc: {} }
+      }
+    };
+
+    function loadSavedScores() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveScore(examId, score, total) {
+      const data = loadSavedScores();
+      const prev = data[examId];
+      if (!prev || score >= prev.score) {
+        data[examId] = { score, total };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+    }
+
+    function stopTimer() {
+      if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      if (!state.timed) return;
+      state.secondsLeft = 18 * 60;
+      state.timerId = setInterval(() => {
+        state.secondsLeft -= 1;
+        if (state.secondsLeft <= 0) {
+          state.secondsLeft = 0;
+          advanceModuleOrFinish();
+          return;
+        }
+        const el = document.getElementById("timer-display");
+        if (el) {
+          el.textContent = formatTime(state.secondsLeft);
+          el.classList.toggle("low", state.secondsLeft <= 120);
+        }
+      }, 1000);
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatPassageHtml(paras, prompt = "") {
+      const quotes = [];
+      const qRe = /[""\u201c]([^""\u201d]{3,80})[""\u201d]/g;
+      let m;
+      while ((m = qRe.exec(prompt || "")) !== null) {
+        quotes.push(m[1]);
+      }
+      return (paras || [])
+        .map(p => {
+          let html = esc(p).replace(/\[([A-D])\]/g, '<span class="marker">[$1]</span>');
+          quotes.forEach(qt => {
+            const safeQt = esc(qt).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            html = html.replace(new RegExp(safeQt, "gi"), match => `<strong>${match}</strong>`);
+          });
+          return `<p>${html}</p>`;
+        })
+        .join("");
+    }
+
+    function formatPromptHtml(prompt) {
+      return esc(prompt).replace(/[""\u201c]([^""\u201d]+)[""\u201d]/g, (_, inner) => `"<strong>${inner}</strong>"`);
+    }
+
+    function currentExam() {
+      return EXAMS[state.examIdx];
+    }
+
+    function currentModule() {
+      return currentExam().modules[state.moduleIdx];
+    }
+
+    function openExam(idx) {
+      stopTimer();
+      state.examIdx = idx;
+      state.moduleIdx = 0;
+      state.stepIdx = 0;
+      state.showM1Review = false;
+      state.checked = { 1: {}, 2: {} };
+      state.responses = {
+        1: { cloze: {}, mc: {} },
+        2: { cloze: {}, mc: {} }
+      };
+      state.view = "instructions";
+      render();
+    }
+
+    function openAnswerKey(idx) {
+      stopTimer();
+      state.examIdx = idx;
+      state.responses = {
+        1: { cloze: {}, mc: {} },
+        2: { cloze: {}, mc: {} }
+      };
+      state.view = "results";
+      render();
+    }
+
+    function startModule(mIdx) {
+      state.moduleIdx = mIdx;
+      state.stepIdx = 0;
+      state.view = "test";
+      startTimer();
+      render();
+    }
+
+    function advanceModuleOrFinish() {
+      stopTimer();
+      if (state.moduleIdx === 0) {
+        state.view = "transition";
+        render();
+      } else {
+        finishExam();
+      }
+    }
+
+    function finishExam(canResume = false) {
+      stopTimer();
+      state.canResume = canResume;
+      if (!canResume) {
+        const res = gradeExam();
+        saveScore(currentExam().id, res.totalCorrect, res.totalQuestions);
+      }
+      state.view = "results";
+      render();
+    }
+
+    function resumeExam() {
+      state.canResume = false;
+      state.view = "test";
+      startTimer();
+      render();
+    }
+
+    function normalizeCloze(str) {
+      return String(str || "").trim().toLowerCase().replace(/[^a-z]/g, "");
+    }
+
+    function gradeExam() {
+      const exam = currentExam();
+      let totalCorrect = 0;
+      let totalQuestions = 0;
+      const byModule = exam.modules.map(mod => {
+        const mNum = mod.module;
+        const resp = state.responses[mNum];
+        const items = [];
+        let modCorrect = 0;
+        for (let i = 1; i <= 10; i++) {
+          const expected = mod.answers[String(i)] || "";
+          const given = resp.cloze[i] || "";
+          const ok = normalizeCloze(given) !== "" && normalizeCloze(given) === normalizeCloze(expected);
+          if (ok) modCorrect++;
+          items.push({ num: i, type: "cloze", given, expected, ok });
+        }
+        mod.questions.forEach(q => {
+          const expected = (mod.answers[String(q.num)] || "").trim().toUpperCase();
+          const given = (resp.mc[q.num] || "").trim().toUpperCase();
+          const ok = given !== "" && given === expected;
+          if (ok) modCorrect++;
+          items.push({ num: q.num, type: "mc", title: q.title, prompt: q.prompt, given, expected, ok });
+        });
+        totalCorrect += modCorrect;
+        totalQuestions += items.length;
+        return { module: mNum, correct: modCorrect, total: items.length, items };
+      });
+      return { totalCorrect, totalQuestions, byModule };
+    }
+
+    function renderTopbar(subtitle = "", showBackHome = false) {
+      const exam = state.view !== "home" ? currentExam() : null;
+      const isHard = exam && exam.title.includes("HARD");
+      return `
+        <header class="topbar">
+          <div class="topbar-left">
+            <span class="brand">TOEFL 2026 Reading Simulator</span>
+            ${exam ? `<span class="pill">${esc(exam.title)}</span>` : ""}
+            ${isHard ? `<span class="pill hard">HARD 2nd Module</span>` : ""}
+            ${subtitle ? `<span class="pill">${esc(subtitle)}</span>` : ""}
+          </div>
+          <div class="topbar-right">
+            ${state.view === "test" && state.timed ? `<span id="timer-display" class="timer ${state.secondsLeft <= 120 ? "low" : ""}">${formatTime(state.secondsLeft)}</span>` : ""}
+            ${state.view === "test" ? `<button class="btn-ghost" onclick="toggleCheckCurrent()">${isCurrentChecked() ? "Hide Answer" : "Check Answer"}</button>` : ""}
+            ${state.view === "test" ? `<button class="btn-ghost" onclick="finishExam(true)">View All Answers</button>` : ""}
+            ${showBackHome ? `<button class="btn-ghost" onclick="goHome()">All Tests</button>` : ""}
+          </div>
+        </header>
+      `;
+    }
+
+    function goHome() {
+      stopTimer();
+      state.view = "home";
+      render();
+    }
+
+    function renderHome() {
+      const saved = loadSavedScores();
+      const cards = EXAMS.map((ex, i) => {
+        const totalQ = 20 + ex.modules[0].questions.length + ex.modules[1].questions.length;
+        const isHard = ex.title.includes("HARD");
+        const best = saved[ex.id];
+        return `
+          <div class="card">
+            <div>
+              <div class="card-top">
+                <h3>${esc(ex.title)}</h3>
+                ${isHard ? `<span class="pill hard">HARD</span>` : ""}
+              </div>
+              <div class="meta" style="margin-top:8px;">
+                <span>2 Modules</span>
+                <span>${totalQ} Questions</span>
+                ${best ? `<span class="score-tag">Best: ${best.score}/${best.total}</span>` : ""}
+              </div>
+            </div>
+            <div class="card-actions">
+              <a href="https://www.youtube.com/watch?v=${esc(ex.videoId)}" target="_blank" rel="noopener" style="font-size:0.85rem;color:var(--primary);text-decoration:none;">YouTube ↗</a>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-secondary" style="padding:7px 11px;font-size:0.85rem;" onclick="openAnswerKey(${i})">Answers</button>
+                <button class="btn-primary" onclick="openExam(${i})">Start Test</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        ${renderTopbar(`${EXAMS.length} Practice Tests`, false)}
+        <main class="container">
+          <section class="hero">
+            <h1>TOEFL 2026 Reading Practice Exams</h1>
+            <p>Extracted from the 17-video TOEFL 2026 Reading Practice playlist (Complete the Words, Read in Daily Life, and Academic Passages) with official Answer Keys and automatic grading.</p>
+          </section>
+          <div class="grid">${cards}</div>
+        </main>
+      `;
+    }
+
+    function renderInstructions() {
+      return `
+        ${renderTopbar("Instructions", true)}
+        <main class="container">
+          <div class="instructions-box">
+            <h2>Reading Section</h2>
+            <p>In an actual test, you will answer 35–48 reading questions to demonstrate how well you understand academic and non-academic texts in English. There are three types of tasks: <strong>Complete the Words</strong>, <strong>Read in Daily Life</strong>, and <strong>Read an Academic Passage</strong>.</p>
+            <p>You will be able to use <strong>Next</strong> and <strong>Back</strong> to move to the next question or return to previous questions within the same module. You <strong>WILL NOT</strong> be able to return to Module 1 once you have begun Module 2.</p>
+            <div class="mode-row">
+              <label class="mode-opt">
+                <input type="radio" name="tmode" ${state.timed ? "checked" : ""} onchange="state.timed=true" />
+                <span>Timed (18 min / module)</span>
+              </label>
+              <label class="mode-opt">
+                <input type="radio" name="tmode" ${!state.timed ? "checked" : ""} onchange="state.timed=false" />
+                <span>Untimed Practice</span>
+              </label>
+            </div>
+            <button class="btn-primary" style="padding:12px 28px;font-size:1.05rem;" onclick="startModule(0)">Begin Module 1</button>
+          </div>
+        </main>
+      `;
+    }
+
+    function renderModuleReviewCard(modRes) {
+      return `
+        <div class="pane" style="text-align:left;margin-top:20px;">
+          <h2 class="pane-title">Module ${modRes.module} (${modRes.correct} / ${modRes.total})</h2>
+          <div>
+            ${modRes.items.map(it => `
+              <div class="review-row">
+                <div>
+                  <strong>Q${it.num}</strong>
+                  ${it.type === "mc" && it.title ? `<span style="color:var(--muted);font-size:0.84rem;"> · ${esc(it.title)}</span>` : ""}
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span>Your: <strong>${esc(it.given || "—")}</strong></span>
+                  <span>Key: <strong>${esc(it.expected)}</strong></span>
+                  <span class="${it.ok ? "badge-ok" : "badge-bad"}">${it.ok ? "Correct" : "Incorrect"}</span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTransition() {
+      const m1Res = state.showM1Review ? gradeExam().byModule[0] : null;
+      return `
+        ${renderTopbar("Module 1 Complete", true)}
+        <main class="container">
+          <div class="instructions-box">
+            <h2>End of Module 1</h2>
+            <p>You have completed <strong>Module 1</strong>. Once you begin <strong>Module 2</strong>, you will not be able to return to Module 1.</p>
+            <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;">
+              <button class="btn-secondary" onclick="state.view='test';startTimer();render();">Return to Module 1</button>
+              <button class="btn-secondary" onclick="state.showM1Review=!state.showM1Review;render();">${state.showM1Review ? "Hide Module 1 Answers" : "Check Module 1 Answers"}</button>
+              <button class="btn-primary" onclick="startModule(1)">Begin Module 2</button>
+            </div>
+            ${m1Res ? renderModuleReviewCard(m1Res) : ""}
+          </div>
+        </main>
+      `;
+    }
+
+    function renderTest() {
+      const mod = currentModule();
+      const totalSteps = 1 + mod.questions.length;
+      const mNum = mod.module;
+      const resp = state.responses[mNum];
+      const maxQ = 10 + mod.questions.length;
+      const checkedNow = isCurrentChecked();
+
+      let bodyHtml = "";
+      let stepLabel = "";
+
+      if (state.stepIdx === 0) {
+        stepLabel = "Questions 1–10";
+        const renderedCloze = esc(mod.cloze).replace(/([A-Za-z]*)\[\[(\d+)\]\]/g, (_, prefix, numStr) => {
+          const n = Number(numStr);
+          const expected = mod.answers[String(n)] || "";
+          const ansLen = expected.length || 4;
+          const val = resp.cloze[n] || "";
+          let statusCls = "";
+          if (checkedNow) {
+            const ok = normalizeCloze(val) !== "" && normalizeCloze(val) === normalizeCloze(expected);
+            statusCls = ok ? "correct" : "wrong";
+          }
+          const boxes = Array.from({ length: ansLen }, (_, cIdx) => {
+            const ch = val[cIdx] && val[cIdx] !== " " ? val[cIdx] : "";
+            return `<input class="cloze-char ${statusCls}" data-blank="${n}" data-pos="${cIdx}" type="text" autocomplete="off" spellcheck="false" maxlength="1" value="${esc(ch)}" onfocus="this.select()" oninput="onClozeCharInput(this)" onkeydown="onClozeCharKey(event, this)" />`;
+          }).join("");
+          return `<span class="cloze-word">${esc(prefix)}<span class="cloze-boxes">${boxes}</span></span>`;
+        });
+
+        let feedbackHtml = "";
+        if (checkedNow) {
+          feedbackHtml = `<div class="cloze-feedback">${Array.from({ length: 10 }, (_, idx) => {
+            const n = idx + 1;
+            const expected = mod.answers[String(n)] || "";
+            const val = resp.cloze[n] || "";
+            const ok = normalizeCloze(val) !== "" && normalizeCloze(val) === normalizeCloze(expected);
+            return `<span class="${ok ? "badge-ok" : "badge-bad"}">${n}. ${esc(expected)}</span>`;
+          }).join("")}</div>`;
+        }
+
+        bodyHtml = `
+          <div class="cloze-toolbar">
+            <div>
+              <h2 style="margin:0;font-size:1.15rem;">Fill in the missing letters in the paragraph</h2>
+              <span style="font-size:0.84rem;color:var(--muted);">Type directly on each blank inside the text (Questions 1–10).</span>
+            </div>
+            <button class="btn-secondary" onclick="toggleCheckCurrent()">${checkedNow ? "Hide Answers" : "Check Answers"}</button>
+          </div>
+          <div class="cloze-paragraph">${renderedCloze}</div>${feedbackHtml}
+        `;
+      } else {
+        const q = mod.questions[state.stepIdx - 1];
+        stepLabel = `Question ${q.num} of ${maxQ}`;
+        const selected = (resp.mc[q.num] || "").trim().toUpperCase();
+        const expected = (mod.answers[String(q.num)] || "").trim().toUpperCase();
+        const optsHtml = ["A", "B", "C", "D"]
+          .filter(k => q.options[k])
+          .map(k => {
+            let cls = selected === k ? "selected" : "";
+            if (checkedNow) {
+              if (k === expected) cls = "correct";
+              else if (selected === k && selected !== expected) cls = "wrong";
+            }
+            return `
+              <button class="opt-btn ${cls}" onclick="selectMc(${q.num}, '${k}')">
+                <span class="opt-letter">(${k})</span>
+                <span>${esc(q.options[k])}</span>
+              </button>
+            `;
+          }).join("");
+
+        bodyHtml = `
+          <div class="split">
+            <div class="pane passage">
+              <div class="pane-header">
+                <h2 class="pane-title">${esc(q.title || "Reading Passage")}</h2>
+              </div>
+              ${formatPassageHtml(q.passage, q.prompt)}
+            </div>
+            <div class="pane">
+              <div class="pane-header">
+                <span style="font-size:0.85rem;font-weight:700;color:var(--muted);">Question ${q.num} of ${maxQ}</span>
+                <button class="btn-secondary" style="padding:5px 10px;font-size:0.8rem;" onclick="toggleCheckCurrent()">${checkedNow ? "Hide Answer" : "Check Answer"}</button>
+              </div>
+              <p class="q-prompt">${formatPromptHtml(q.prompt)}</p>
+              <div class="options">${optsHtml}</div>
+              ${checkedNow ? `<p style="margin-top:14px;font-weight:700;color:${selected === expected ? "var(--ok)" : "var(--bad)"};">${selected === expected ? "Correct!" : `Correct answer: (${esc(expected)})`}</p>` : ""}
+            </div>
+          </div>
+        `;
+      }
+
+      const dotsHtml = Array.from({ length: totalSteps }, (_, i) => {
+        const label = i === 0 ? "1–10" : String(mod.questions[i - 1].num);
+        const isAnswered = i === 0
+          ? Object.values(resp.cloze).some(v => v && v.trim() !== "")
+          : Boolean(resp.mc[mod.questions[i - 1].num]);
+        return `<button class="dot ${state.stepIdx === i ? "active" : ""} ${isAnswered ? "answered" : ""}" onclick="goToStep(${i})">${label}</button>`;
+      }).join("");
+
+      const isLast = state.stepIdx === totalSteps - 1;
+      const nextLabel = isLast ? (state.moduleIdx === 0 ? "Finish Module 1 →" : "Submit Exam ✓") : "Next →";
+
+      return `
+        <div class="test-shell">
+          ${renderTopbar(`Module ${mNum} · ${stepLabel}`, true)}
+          <main class="test-main">
+            <div class="test-body">${bodyHtml}</div>
+            <div class="nav-footer">
+              <button class="btn-secondary" ${state.stepIdx === 0 ? "disabled" : ""} onclick="goToStep(${state.stepIdx - 1})">← Back</button>
+              <div class="dots">${dotsHtml}</div>
+              <button class="btn-primary" onclick="${isLast ? "advanceModuleOrFinish()" : `goToStep(${state.stepIdx + 1})`}">${nextLabel}</button>
+            </div>
+          </main>
+        </div>
+      `;
+    }
+
+    function currentCheckKey() {
+      const mod = currentModule();
+      return state.stepIdx === 0 ? 0 : mod.questions[state.stepIdx - 1].num;
+    }
+
+    function isCurrentChecked() {
+      const mod = currentModule();
+      return Boolean(state.checked[mod.module][currentCheckKey()]);
+    }
+
+    function toggleCheckCurrent() {
+      const mod = currentModule();
+      const k = currentCheckKey();
+      state.checked[mod.module][k] = !state.checked[mod.module][k];
+      render();
+    }
+
+    function syncClozeBlank(blankNum) {
+      const inputs = Array.from(document.querySelectorAll(`.cloze-char[data-blank="${blankNum}"]`));
+      state.responses[currentModule().module].cloze[blankNum] = inputs.map(i => i.value || " ").join("");
+    }
+
+    function onClozeCharInput(el) {
+      const blankNum = Number(el.dataset.blank);
+      el.value = (el.value || "").slice(-1).toLowerCase();
+      syncClozeBlank(blankNum);
+      if (el.value) {
+        const all = Array.from(document.querySelectorAll(".cloze-char"));
+        const idx = all.indexOf(el);
+        if (idx >= 0 && idx + 1 < all.length) {
+          all[idx + 1].focus();
+        }
+      }
+    }
+
+    function onClozeCharKey(e, el) {
+      const all = Array.from(document.querySelectorAll(".cloze-char"));
+      const idx = all.indexOf(el);
+      if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        el.value = e.key.toLowerCase();
+        syncClozeBlank(Number(el.dataset.blank));
+        if (idx >= 0 && idx + 1 < all.length) {
+          all[idx + 1].focus();
+        }
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        if (el.value) {
+          el.value = "";
+          syncClozeBlank(Number(el.dataset.blank));
+        } else if (idx > 0) {
+          const prev = all[idx - 1];
+          prev.value = "";
+          syncClozeBlank(Number(prev.dataset.blank));
+          prev.focus();
+        }
+      } else if (e.key === "ArrowLeft" && idx > 0) {
+        e.preventDefault();
+        all[idx - 1].focus();
+      } else if (e.key === "ArrowRight" && idx + 1 < all.length) {
+        e.preventDefault();
+        all[idx + 1].focus();
+      }
+    }
+
+    function selectMc(qNum, letter) {
+      state.responses[currentModule().module].mc[qNum] = letter;
+      render();
+    }
+
+    function goToStep(idx) {
+      state.stepIdx = idx;
+      render();
+    }
+
+    function renderResults() {
+      const res = gradeExam();
+      const pct = Math.round((res.totalCorrect / res.totalQuestions) * 100);
+      const modulesHtml = res.byModule.map(m => `
+        <div class="pane">
+          <h2 class="pane-title">Module ${m.module} (${m.correct} / ${m.total})</h2>
+          <div>
+            ${m.items.map(it => `
+              <div class="review-row">
+                <div>
+                  <strong>Q${it.num}</strong>
+                  ${it.type === "mc" && it.title ? `<span style="color:var(--muted);font-size:0.84rem;"> · ${esc(it.title)}</span>` : ""}
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span>Your: <strong>${esc(it.given || "—")}</strong></span>
+                  <span>Key: <strong>${esc(it.expected)}</strong></span>
+                  <span class="${it.ok ? "badge-ok" : "badge-bad"}">${it.ok ? "Correct" : "Incorrect"}</span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+
+      return `
+        ${renderTopbar("Results & Answer Key", true)}
+        <main class="container">
+          <div class="results-header">
+            <div>
+              <h1 style="margin:0 0 6px;">Exam Complete: ${esc(currentExam().title)}</h1>
+              <p style="margin:0;color:var(--muted);">Review your answers against the official Answer Key below.</p>
+            </div>
+            <div style="text-align:right;">
+              <div class="big-score">${res.totalCorrect} / ${res.totalQuestions} (${pct}%)</div>
+              <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+                ${state.canResume ? `<button class="btn-primary" onclick="resumeExam()">← Continue Exam</button>` : ""}
+                <button class="btn-secondary" onclick="openExam(${state.examIdx})">Retake Exam</button>
+                <button class="${state.canResume ? "btn-secondary" : "btn-primary"}" onclick="goHome()">Choose Another Test</button>
+              </div>
+            </div>
+          </div>
+          <div class="review-grid">${modulesHtml}</div>
+        </main>
+      `;
+    }
+
+    function render() {
+      const app = document.getElementById("app");
+      if (state.view === "home") app.innerHTML = renderHome();
+      else if (state.view === "instructions") app.innerHTML = renderInstructions();
+      else if (state.view === "transition") app.innerHTML = renderTransition();
+      else if (state.view === "test") app.innerHTML = renderTest();
+      else if (state.view === "results") app.innerHTML = renderResults();
+    }
+
+    render();
+  </script>
+</body>
+</html>
