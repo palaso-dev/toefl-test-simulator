@@ -508,6 +508,7 @@
       moduleIdx: 0,
       stepIdx: 0,
       timed: true,
+      timerPaused: false,
       showM1Review: false,
       canResume: false,
       secondsLeft: 18 * 60,
@@ -546,11 +547,16 @@
       }
     }
 
-    function startTimer() {
+    function startTimer(resetTime = false) {
       stopTimer();
       if (!state.timed) return;
-      state.secondsLeft = 18 * 60;
+      if (resetTime) {
+        state.secondsLeft = 18 * 60;
+        state.timerPaused = false;
+      }
+      if (state.timerPaused) return;
       state.timerId = setInterval(() => {
+        if (state.timerPaused) return;
         state.secondsLeft -= 1;
         if (state.secondsLeft <= 0) {
           state.secondsLeft = 0;
@@ -563,6 +569,21 @@
           el.classList.toggle("low", state.secondsLeft <= 120);
         }
       }, 1000);
+    }
+
+    function toggleTimerPause() {
+      state.timerPaused = !state.timerPaused;
+      if (state.timerPaused) {
+        stopTimer();
+      } else {
+        startTimer(false);
+      }
+      render();
+    }
+
+    function resetTimer() {
+      startTimer(true);
+      render();
     }
 
     function formatTime(sec) {
@@ -640,7 +661,7 @@
       state.moduleIdx = mIdx;
       state.stepIdx = 0;
       state.view = "test";
-      startTimer();
+      startTimer(true);
       render();
     }
 
@@ -718,7 +739,11 @@
             ${subtitle ? `<span class="pill">${esc(subtitle)}</span>` : ""}
           </div>
           <div class="topbar-right">
-            ${state.view === "test" && state.timed ? `<span id="timer-display" class="timer ${state.secondsLeft <= 120 ? "low" : ""}">${formatTime(state.secondsLeft)}</span>` : ""}
+            ${state.view === "test" && state.timed ? `
+              <span id="timer-display" class="timer ${state.secondsLeft <= 120 ? "low" : ""}">${formatTime(state.secondsLeft)}${state.timerPaused ? " ⏸" : ""}</span>
+              <button class="btn-ghost" onclick="toggleTimerPause()" title="Pause or resume timer">${state.timerPaused ? "▶ Resume" : "⏸ Pause"}</button>
+              <button class="btn-ghost" onclick="resetTimer()" title="Reset timer to 18:00">↻ Reset</button>
+            ` : ""}
             ${state.view === "test" ? `<button class="btn-ghost" onclick="toggleCheckCurrent()">${isCurrentChecked() ? "Hide Answer" : "Check Answer"}</button>` : ""}
             ${state.view === "test" ? `<button class="btn-ghost" onclick="finishExam(true)">View All Answers</button>` : ""}
             ${showBackHome ? `<button class="btn-ghost" onclick="goHome()">All Tests</button>` : ""}
