@@ -582,8 +582,10 @@
     }
 
     function resetTimer() {
-      startTimer(true);
-      render();
+      if (confirm("Reset timer to 18:00?")) {
+        startTimer(true);
+        render();
+      }
     }
 
     function formatTime(sec) {
@@ -742,9 +744,8 @@
             ${state.view === "test" && state.timed ? `
               <span id="timer-display" class="timer ${state.secondsLeft <= 120 ? "low" : ""}">${formatTime(state.secondsLeft)}${state.timerPaused ? " ⏸" : ""}</span>
               <button class="btn-ghost" onclick="toggleTimerPause()" title="Pause or resume timer">${state.timerPaused ? "▶ Resume" : "⏸ Pause"}</button>
-              <button class="btn-ghost" onclick="resetTimer()" title="Reset timer to 18:00">↻ Reset</button>
+              <button class="btn-ghost" onclick="resetTimer()" title="Reset timer to 18:00" style="margin-right:10px;">↻ Reset</button>
             ` : ""}
-            ${state.view === "test" ? `<button class="btn-ghost" onclick="toggleCheckCurrent()">${isCurrentChecked() ? "Hide Answer" : "Check Answer"}</button>` : ""}
             ${state.view === "test" ? `<button class="btn-ghost" onclick="finishExam(true)">View All Answers</button>` : ""}
             ${showBackHome ? `<button class="btn-ghost" onclick="goHome()">All Tests</button>` : ""}
           </div>
